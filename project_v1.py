@@ -87,7 +87,7 @@ def astar(maze, start, end):
 
             child.g = current_node.g + child.cost
             #keep track of car distance where 1 cost is 10 feet
-            child.distance = child.g*10
+            child.distance = child.g*60
             child.h = abs(child.position[0] - end_node.position[0]) + abs(child.position[1] - end_node.position[1])
             child.f = child.g + child.h
 
