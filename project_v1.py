@@ -53,7 +53,6 @@ def astar(maze, start, end):
         if current_node.position == end_node.position:
             path = []
             current = current_node
-            dist = 0
             while current is not None:
                 path.append((current.position,'{0} feet'.format(current.distance)))
                 current = current.parent
