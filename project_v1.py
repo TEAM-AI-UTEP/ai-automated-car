@@ -4,10 +4,11 @@ import random
 class Node():
     """A node class for A* Pathfinding"""
 
-    def __init__(self, parent=None, position=None, cost = 0):
+    def __init__(self, parent=None, position=None, cost = 0, distance=0):
         self.parent = parent
         self.position = position
         self.cost = cost
+        self.distance = distance
 
         self.g = 0
         self.h = 0
@@ -52,12 +53,14 @@ def astar(maze, start, end):
         if current_node.position == end_node.position:
             path = []
             current = current_node
+            dist = 0
             while current is not None:
-                path.append(current.position)
+                path.append((current.position,'{0} feet'.format(current.distance)))
                 current = current.parent
             end_time = time.time()
             print("Path: ", path[::-1])
             print("Number of nodes created: ", len(closed_list))
+            print("Total Distance Car Traveled: {0}".format(path[0]))
             print("Runtime(ms): ", (end_time - start_time) * 1000)
             return ''
 
@@ -84,6 +87,8 @@ def astar(maze, start, end):
         for child in children:
 
             child.g = current_node.g + child.cost
+            #keep track of car distance where 1 cost is 10 feet
+            child.distance = child.g*10
             child.h = abs(child.position[0] - end_node.position[0]) + abs(child.position[1] - end_node.position[1])
             child.f = child.g + child.h
 
