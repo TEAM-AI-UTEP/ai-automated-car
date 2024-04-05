@@ -1,5 +1,6 @@
 import time
 import random
+import math
 
 #Heuristic used to detect a near impassible. In this case, a stop sign to slow the speed down
 def improved_manhatten(current_node,end_node,impassable,manhatten,estimate = .7):
