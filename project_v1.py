@@ -18,6 +18,7 @@ def improved_manhatten(current_node,end_node,impassable,stop_sign,manhatten,esti
     combination = manhatten + estimate*pythagorean
     
     for stop in stop_sign:
+        #TODO: check proximity to reduce speed -> logic
         if near_stop(current_node,stop):
             current_node.speed  = current_node.speed - 5
         
