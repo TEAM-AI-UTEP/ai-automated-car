@@ -108,7 +108,8 @@ def astar(maze, start, end):
                 path.append((current.position,'{0} feet'.format(current.distance), '{0} X/X'.format(current.speed)))
                 current = current.parent
             end_time = time.time()
-            print("Path: ", path[::-1])
+            for p in path[::-1]:
+                print("Path: {0}\n".format(p))
             print("Number of nodes created: ", len(closed_list))
             print("Total Distance Car Traveled: {0}".format(path[0]))
             print("Runtime(ms): ", (end_time - start_time) * 1000)
@@ -130,7 +131,7 @@ def astar(maze, start, end):
                 stop_sign += [[int(node_position[0]),int(node_position[1])]]
 
             new_node = Node(current_node, node_position, maze[node_position[0]][node_position[1]])
-            print(maze[node_position[0]][node_position[1]])
+            # print(maze[node_position[0]][node_position[1]])
        
             if any(node.position == new_node.position for node in closed_list) or new_node.position in visited:
                 continue
