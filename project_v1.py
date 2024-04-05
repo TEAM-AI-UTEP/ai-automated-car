@@ -1,6 +1,35 @@
 import time
 import random
 
+#Heuristic used to detect a near impassible. In this case, a stop sign to slow the speed down
+def improved_manhatten(current_node,end_node,impassable,manhatten,estimate = .7):
+    '''
+    Manhatten distance using a combination of pythagorean and manhatten distance formulas
+    Given also a list of coordiantes that are impassable to check an approzimate where they may be close to one
+    '''
+    #set a pentaly if an impassable is near
+    penalty = 0.3
+    
+    pythagorean = math.sqrt(((current_node.position[0] - end_node.position[0])**2) 
+                            + (current_node.position[1] - end_node.position[1])**2)
+
+    # combination of pythagorean and manhatten with estimate 
+    combination = manhatten + estimate*pythagorean
+    for zero in impassable:
+        if near_impassable(current_node,zero):
+            combination += penalty
+    return int(combination)
+
+def near_impassable(node,obsticle):
+    """
+    helper function to check if the current node is near an impassable location
+    """
+    #set a proximity view if impassable is near detection
+    proximity = 1
+    return abs(node.position[0] - obsticle[0]) <= proximity and abs(node.position[1] - obsticle[1]) <= proximity
+
+
+
 class Node():
     """A node class for A* Pathfinding"""
 
@@ -89,6 +118,8 @@ def astar(maze, start, end):
             child.g = current_node.g + child.cost
             #keep track of car distance where 1 cost is 10 feet
             child.distance = child.g*60
+            if(maze[child.position[0]][child.position[1]]== 1):
+                child.speed = 20
             child.h = abs(child.position[0] - end_node.position[0]) + abs(child.position[1] - end_node.position[1])
             child.f = child.g + child.h
 
