@@ -3,7 +3,7 @@ import random
 import math
 
 #Heuristic used to detect a near impassible. In this case, a stop sign to slow the speed down
-def improved_manhatten(current_node,end_node,impassable,manhatten,estimate = .7):
+def improved_manhatten(current_node,end_node,impassable,stop_sign,manhatten,estimate = .7):
     '''
     Manhatten distance using a combination of pythagorean and manhatten distance formulas
     Given also a list of coordiantes that are impassable to check an approzimate where they may be close to one
@@ -16,8 +16,13 @@ def improved_manhatten(current_node,end_node,impassable,manhatten,estimate = .7)
 
     # combination of pythagorean and manhatten with estimate 
     combination = manhatten + estimate*pythagorean
-    for zero in impassable:
-        if near_impassable(current_node,zero):
+    
+    for stop in stop_sign:
+        if near_stop(current_node,stop):
+            current_node.speed -= 10
+        
+    for obsticle in impassable:
+        if near_impassable(current_node,obsticle):
             combination += penalty
     return int(combination)
 
@@ -27,9 +32,16 @@ def near_impassable(node,obsticle):
     """
     #set a proximity view if impassable is near detection
     proximity = 1
-    #reduce speed
-    node.speed -= 10
     return abs(node.position[0] - obsticle[0]) <= proximity and abs(node.position[1] - obsticle[1]) <= proximity
+
+def near_stop(node,stop):
+    """
+    helper function to check if the current node is near an impassable location
+    """
+    #set a proximity view if impassable is near detection
+    proximity = 3
+    return abs(node.position[0] - stop[0]) <= proximity and abs(node.position[1] - stop[1]) <= proximity
+
 
 
 
@@ -64,6 +76,9 @@ def astar(maze, start, end):
     #list of impassibles to keep in check - used for H3
     impassable = []
 
+    #list of location where stop sign present
+    stop_sign = []
+
     open_list.append(start_node)
     
     start_time = time.time()
@@ -90,7 +105,7 @@ def astar(maze, start, end):
             path = []
             current = current_node
             while current is not None:
-                path.append((current.position,'{0} feet'.format(current.distance)), '{0} X/X'.format(current.speed))
+                path.append((current.position,'{0} feet'.format(current.distance), '{0} X/X'.format(current.speed)))
                 current = current.parent
             end_time = time.time()
             print("Path: ", path[::-1])
@@ -107,12 +122,16 @@ def astar(maze, start, end):
             if node_position[0] > (len(maze) - 1) or node_position[0] < 0 or node_position[1] > (len(maze[len(maze)-1]) -1) or node_position[1] < 0:
                 continue
 
-            if maze[node_position[0]][node_position[1]] == -1 or maze[node_position[0]][node_position[1]] == 0 :
+            if maze[node_position[0]][node_position[1]] == -1:
                 impassable += [[int(node_position[0]),int(node_position[1])]]
                 continue
 
-            new_node = Node(current_node, node_position, maze[node_position[0]][node_position[1]])
+            if maze[node_position[0]][node_position[1]] == 0:
+                stop_sign += [[int(node_position[0]),int(node_position[1])]]
 
+            new_node = Node(current_node, node_position, maze[node_position[0]][node_position[1]])
+            print(maze[node_position[0]][node_position[1]])
+       
             if any(node.position == new_node.position for node in closed_list) or new_node.position in visited:
                 continue
 
@@ -128,7 +147,8 @@ def astar(maze, start, end):
             if(maze[child.position[0]][child.position[1]]== 1):
                 child.speed = 20
             # child.h = abs(child.position[0] - end_node.position[0]) + abs(child.position[1] - end_node.position[1])
-            child.h = improved_manhatten(child,end_node,impassable)
+            manhatten = abs(child.position[0] - end_node.position[0]) + abs(child.position[1] - end_node.position[1])
+            child.h = improved_manhatten(child,end_node,impassable,stop_sign, manhatten)
             child.f = child.g + child.h
 
             open_list.append(child)
