@@ -9,7 +9,7 @@ def improved_manhatten(current_node,end_node,impassable,stop_sign,manhatten,esti
     Given also a list of coordiantes that are impassable to check an approzimate where they may be close to one
     '''
     #set a pentaly if an impassable is near
-    penalty = 0.3
+    penalty = 0.9
     
     pythagorean = math.sqrt(((current_node.position[0] - end_node.position[0])**2) 
                             + (current_node.position[1] - end_node.position[1])**2)
@@ -19,7 +19,7 @@ def improved_manhatten(current_node,end_node,impassable,stop_sign,manhatten,esti
     
     for stop in stop_sign:
         if near_stop(current_node,stop):
-            current_node.speed -= 10
+            current_node.speed  = current_node.speed - 5
         
     for obsticle in impassable:
         if near_impassable(current_node,obsticle):
@@ -31,7 +31,7 @@ def near_impassable(node,obsticle):
     helper function to check if the current node is near an impassable location
     """
     #set a proximity view if impassable is near detection
-    proximity = 1
+    proximity = 4
     return abs(node.position[0] - obsticle[0]) <= proximity and abs(node.position[1] - obsticle[1]) <= proximity
 
 def near_stop(node,stop):
@@ -42,6 +42,10 @@ def near_stop(node,stop):
     proximity = 3
     return abs(node.position[0] - stop[0]) <= proximity and abs(node.position[1] - stop[1]) <= proximity
 
+class Car():
+    def __init__(self,distance=0, speed=0):
+        self.distance = distance
+        self.speed = speed
 
 
 
