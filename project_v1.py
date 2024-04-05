@@ -27,6 +27,8 @@ def near_impassable(node,obsticle):
     """
     #set a proximity view if impassable is near detection
     proximity = 1
+    #reduce speed
+    node.speed -= 10
     return abs(node.position[0] - obsticle[0]) <= proximity and abs(node.position[1] - obsticle[1]) <= proximity
 
 
@@ -59,6 +61,9 @@ def astar(maze, start, end):
     open_list = []
     closed_list = []
 
+    #list of impassibles to keep in check - used for H3
+    impassable = []
+
     open_list.append(start_node)
     
     start_time = time.time()
@@ -85,7 +90,7 @@ def astar(maze, start, end):
             path = []
             current = current_node
             while current is not None:
-                path.append((current.position,'{0} feet'.format(current.distance)))
+                path.append((current.position,'{0} feet'.format(current.distance)), '{0} X/X'.format(current.speed))
                 current = current.parent
             end_time = time.time()
             print("Path: ", path[::-1])
@@ -102,7 +107,8 @@ def astar(maze, start, end):
             if node_position[0] > (len(maze) - 1) or node_position[0] < 0 or node_position[1] > (len(maze[len(maze)-1]) -1) or node_position[1] < 0:
                 continue
 
-            if maze[node_position[0]][node_position[1]] == -1:
+            if maze[node_position[0]][node_position[1]] == -1 or maze[node_position[0]][node_position[1]] == 0 :
+                impassable += [[int(node_position[0]),int(node_position[1])]]
                 continue
 
             new_node = Node(current_node, node_position, maze[node_position[0]][node_position[1]])
@@ -121,7 +127,8 @@ def astar(maze, start, end):
             child.distance = child.g*60
             if(maze[child.position[0]][child.position[1]]== 1):
                 child.speed = 20
-            child.h = abs(child.position[0] - end_node.position[0]) + abs(child.position[1] - end_node.position[1])
+            # child.h = abs(child.position[0] - end_node.position[0]) + abs(child.position[1] - end_node.position[1])
+            child.h = improved_manhatten(child,end_node,impassable)
             child.f = child.g + child.h
 
             open_list.append(child)
