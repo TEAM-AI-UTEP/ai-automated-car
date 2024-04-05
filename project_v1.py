@@ -4,11 +4,12 @@ import random
 class Node():
     """A node class for A* Pathfinding"""
 
-    def __init__(self, parent=None, position=None, cost = 0, distance=0):
+    def __init__(self, parent=None, position=None, cost = 0, distance=0, speed=0):
         self.parent = parent
         self.position = position
         self.cost = cost
         self.distance = distance
+        self.speed = speed
 
         self.g = 0
         self.h = 0
