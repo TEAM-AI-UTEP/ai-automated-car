@@ -3,7 +3,7 @@ import random
 import math
 
 #Heuristic used to detect a near impassible. In this case, a stop sign to slow the speed down
-def improved_manhatten(current_node,car,end_node,impassable,stop_sign,manhatten,estimate = .7):
+def improved_manhatten(current_node,car,end_node,impassable,stop_sign,manhatten,maze,estimate = .7):
     '''
     Manhatten distance using a combination of pythagorean and manhatten distance formulas
     Given also a list of coordiantes that are impassable to check an approzimate where they may be close to one
@@ -16,13 +16,21 @@ def improved_manhatten(current_node,car,end_node,impassable,stop_sign,manhatten,
 
     # combination of pythagorean and manhatten with estimate 
     combination = manhatten + estimate*pythagorean
-    
-    for stop in stop_sign:
-        if near_stop(current_node,stop):
-            car.speed = car.speed - 5
-            #bug fix
-            break
-    print(car.speed)
+
+
+    if not car.stopped:
+        for stop in stop_sign:
+            if near_stop(current_node,stop):
+                car.speed = car.speed - 10
+                current_node.speed = car.speed
+                if maze[current_node.position[0]][current_node.position[1]] == 0:
+                    car.speed = 0
+                    car.stopped = True
+                #bug fix
+                break
+    print(car.speed, current_node.position)
+
+
     for obsticle in impassable:
         if near_impassable(current_node,obsticle):
             combination += penalty
@@ -33,7 +41,7 @@ def near_impassable(node,obsticle):
     helper function to check if the current node is near an impassable location
     """
     #set a proximity view if impassable is near detection
-    proximity = 5
+    proximity = 10
     return abs(node.position[0] - obsticle[0]) <= proximity and abs(node.position[1] - obsticle[1]) <= proximity
 
 def near_stop(node,stop):
@@ -41,13 +49,14 @@ def near_stop(node,stop):
     helper function to check if the current node is near an impassable location
     """
     #set a proximity view if impassable is near detection
-    proximity = 6
+    proximity = 10
     return abs(node.position[0] - stop[0]) <= proximity and abs(node.position[1] - stop[1]) <= proximity
 
 class Car():
-    def __init__(self,distance=0, speed=0):
+    def __init__(self,distance=0, speed=0, stopped = False):
         self.distance = distance
         self.speed = speed
+        self.stopped = stopped
 
 
 
@@ -111,7 +120,7 @@ def astar(maze, start, end):
             path = []
             current = current_node
             while current is not None:
-                path.append((current.position,'{0} feet'.format(current.distance), '{0} X/X'.format(car.speed)))
+                path.append((current.position,'{0} feet'.format(current.distance), '{0} X/X'.format(current.speed)))
                 current = current.parent
             end_time = time.time()
             for p in path[::-1]:
@@ -152,11 +161,11 @@ def astar(maze, start, end):
             #keep track of car distance where 1 cost is 10 feet
             child.distance = child.g*60
             if(maze[child.position[0]][child.position[1]]== 1):
-                # child.speed = 20
                 car.speed = 20
+                child.speed = car.speed
             # child.h = abs(child.position[0] - end_node.position[0]) + abs(child.position[1] - end_node.position[1])
             manhatten = abs(child.position[0] - end_node.position[0]) + abs(child.position[1] - end_node.position[1])
-            child.h = improved_manhatten(child,car,end_node,impassable,stop_sign, manhatten)
+            child.h = improved_manhatten(child,car,end_node,impassable,stop_sign, manhatten, maze)
             child.f = child.g + child.h
 
             open_list.append(child)
