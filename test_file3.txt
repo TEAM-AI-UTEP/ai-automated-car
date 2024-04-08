@@ -1,0 +1,4 @@
+000000->stop signs
+111->20 miles per hours
+2->40 miles
+3 -> 60 miles
