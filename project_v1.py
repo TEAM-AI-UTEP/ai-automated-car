@@ -20,9 +20,11 @@ def improved_manhatten(current_node,car,end_node,impassable,stop_sign,manhatten,
 
     if not car.stopped:
         for stop in stop_sign:
+            
             if near_stop(current_node,stop):
                 car.speed = car.speed - 10
                 current_node.speed = car.speed
+                #if at the stop sign area
                 if maze[current_node.position[0]][current_node.position[1]] == 0:
                     car.speed = 0
                     car.stopped = True
@@ -31,32 +33,33 @@ def improved_manhatten(current_node,car,end_node,impassable,stop_sign,manhatten,
     print(car.speed, current_node.position)
 
 
-    for obsticle in impassable:
-        if near_impassable(current_node,obsticle):
+    for obstacle in impassable:
+        if near_impassable(current_node,obstacle):
             combination += penalty
     return int(combination)
 
-def near_impassable(node,obsticle):
+def near_impassable(node,obstacle):
     """
     helper function to check if the current node is near an impassable location
     """
     #set a proximity view if impassable is near detection
     proximity = 10
-    return abs(node.position[0] - obsticle[0]) <= proximity and abs(node.position[1] - obsticle[1]) <= proximity
+    return abs(node.position[0] - obstacle[0]) <= proximity and abs(node.position[1] - obstacle[1]) <= proximity
 
 def near_stop(node,stop):
     """
     helper function to check if the current node is near an impassable location
     """
     #set a proximity view if impassable is near detection
-    proximity = 10
+    proximity = 3
     return abs(node.position[0] - stop[0]) <= proximity and abs(node.position[1] - stop[1]) <= proximity
 
 class Car():
-    def __init__(self,distance=0, speed=0, stopped = False):
+    def __init__(self,distance=0, speed=0, stopped = False, obstacle_visted = set()):
         self.distance = distance
         self.speed = speed
         self.stopped = stopped
+        self.obstacle_visted = obstacle_visted
 
 
 
@@ -144,12 +147,14 @@ def astar(maze, start, end):
 
             if maze[node_position[0]][node_position[1]] == 0:
                 stop_sign += [[int(node_position[0]),int(node_position[1])]]
+                car.obstacle_visted.add(maze[node_position[0]][node_position[1]])
 
             new_node = Node(current_node, node_position, maze[node_position[0]][node_position[1]])
             # print(maze[node_position[0]][node_position[1]])
        
             if any(node.position == new_node.position for node in closed_list) or new_node.position in visited:
                 continue
+
 
             visited.add(new_node.position)
 
@@ -163,6 +168,9 @@ def astar(maze, start, end):
             if(maze[child.position[0]][child.position[1]]== 1):
                 car.speed = 20
                 child.speed = car.speed
+                #if a stop sign was already visited, keep speed the same (according to driving rules)
+                if maze[child.position[0]][child.position[1]] in car.obstacle_visted:
+                    car.speed = 20
             # child.h = abs(child.position[0] - end_node.position[0]) + abs(child.position[1] - end_node.position[1])
             manhatten = abs(child.position[0] - end_node.position[0]) + abs(child.position[1] - end_node.position[1])
             child.h = improved_manhatten(child,car,end_node,impassable,stop_sign, manhatten, maze)
