@@ -35,15 +35,31 @@ The AI agent's goal is to learn the shortest path between the item packaging are
 As shown in the image above, there are 121 possible states (locations) within the warehouse. These states are arranged in a grid containing 11 rows and 11 columns. Each location can hence be identified by its row and column index.
 """
 
+################## Read Test File
+file_path = input("Enter the path to the maze text file: ")
+with open(file_path, 'r') as file:
+    maze = []
+    for line in file:
+        row = [int(x) for x in line.strip().split()]
+        maze.append(row)
+###################
+
+
+
 #define the shape of the environment (i.e., its states)
-environment_rows = 11
-environment_columns = 11
+environment_rows = len(maze)
+environment_columns = len(maze[0])
 
 #Create a 3D numpy array to hold the current Q-values for each state and action pair: Q(s, a)
 #The array contains 11 rows and 11 columns (to match the shape of the environment), as well as a third "action" dimension.
 #The "action" dimension consists of 4 layers that will allow us to keep track of the Q-values for each possible action in
 #each state (see next cell for a description of possible actions).
 #The value of each (state, action) pair is initialized to 0.
+
+#Our example of a grid map
+# q_values = np.zeros((environment_rows, environment_columns, 4))
+
+#Automotive Car
 q_values = np.zeros((environment_rows, environment_columns, 4))
 
 """#### Actions
@@ -76,8 +92,11 @@ Negative rewards (i.e., **punishments**) are used for all states except the goal
 To maximize its cumulative rewards (by minimizing its cumulative punishments), the AI agent will need find the shortest paths between the item packaging area (green square) and all of the other locations in the warehouse where the robot is allowed to travel (white squares). The agent will also need to learn to avoid crashing into any of the item storage locations (black squares)!
 """
 
+
+#Reference Example
+'''
 #Create a 2D numpy array to hold the rewards for each state.
-#The array contains 11 rows and 11 columns (to match the shape of the environment), and each value is initialized to -100.
+#The array contains 15 rows and 15 columns (to match the shape of the environment), and each value is initialized to -100.
 rewards = np.full((environment_rows, environment_columns), -100.)
 rewards[0, 5] = 100. #set the reward for the packaging area (i.e., the goal) to 100
 
@@ -102,6 +121,14 @@ for row_index in range(1, 10):
 #print rewards matrix
 for row in rewards:
   print(row)
+'''
+
+#Our Problem Context - City with four ways and two ways
+for row in maze:
+  print(row)
+
+rewards = maze
+
 
 """## Train the Model
 Our next task is for our AI agent to learn about its environment by implementing a Q-learning model. The learning process will follow these steps:
@@ -120,7 +147,8 @@ This entire process will be repeated across 1000 episodes. This will provide the
 #define a function that determines if the specified location is a terminal state
 def is_terminal_state(current_row_index, current_column_index):
   #if the reward for this location is -1, then it is not a terminal state (i.e., it is a 'white square')
-  if rewards[current_row_index, current_column_index] == -1.:
+  # #changed to list representation
+  if rewards[current_row_index][current_column_index] == -1.:
     return False
   else:
     return True
@@ -202,7 +230,8 @@ for episode in range(1000):
     row_index, column_index = get_next_location(row_index, column_index, action_index)
 
     #receive the reward for moving to the new state, and calculate the temporal difference
-    reward = rewards[row_index, column_index]
+    #changed to list representation
+    reward = rewards[row_index][column_index]
     old_q_value = q_values[old_row_index, old_column_index, action_index]
     temporal_difference = reward + (discount_factor * np.max(q_values[row_index, column_index])) - old_q_value
 
@@ -221,9 +250,9 @@ Run the code cell below to try a few different starting locations!
 """
 
 #display a few shortest paths
-print(get_shortest_path(3, 9)) #starting at row 3, column 9
-print(get_shortest_path(5, 0)) #starting at row 5, column 0
-print(get_shortest_path(9, 5)) #starting at row 9, column 5
+print(get_shortest_path(11, 0)) #starting at row 3, column 9
+# print(get_shortest_path(5, 0)) #starting at row 5, column 0
+# print(get_shortest_path(9, 5)) #starting at row 9, column 5
 
 """#### Finally...
 It's great that our robot can automatically take the shortest path from any 'legal' location in the warehouse to the item packaging area. **But what about the opposite scenario?**
@@ -236,6 +265,6 @@ Run the code cell below to see an example:
 """
 
 #display an example of reversed shortest path
-path = get_shortest_path(5, 2) #go to row 5, column 2
-path.reverse()
-print(path)
+# path = get_shortest_path(5, 2) #go to row 5, column 2
+# path.reverse()
+# print(path)
