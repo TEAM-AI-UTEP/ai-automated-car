@@ -30,7 +30,7 @@ environment_columns = len(maze[0])
 #Create a 3D numpy array to hold the current Q-values for each state and action pair: Q(s, a)
 
 #Automotive Car
-q_values = np.zeros((environment_rows, environment_columns, 4))
+q_values = np.zeros((environment_rows, environment_columns, 6))
 
 """#### Actions
 The actions that are available to the AI agent are to move the robot in one of four directions:
@@ -107,21 +107,27 @@ def get_next_action(current_row_index, current_column_index, epsilon):
 def get_next_location(current_row_index, current_column_index, action_index):
   new_row_index = current_row_index
   new_column_index = current_column_index
-  if actions[action_index] == 'up' and current_row_index > 0:
-    new_row_index -= 1
-  elif actions[action_index] == 'right' and current_column_index < environment_columns - 1:
-    new_column_index += 1
-  elif actions[action_index] == 'down' and current_row_index < environment_rows - 1:
-    new_row_index += 1
-  elif actions[action_index] == 'left' and current_column_index > 0:
-    new_column_index -= 1
-  elif actions[action_index] == 'slow' and current_column_index > 0:
-    car_agent.speed = 10
-  elif actions[action_index] == 'stop' and current_column_index > 0:
-    car_agent.speed = 0
-  elif actions[action_index] == 'resume' and current_column_index > 0:
-    car_agent.speed = 10
+  #For any location
+  if rewards[current_row_index][current_column_index]:
+    if actions[action_index] == 'up' and current_row_index > 0:
+      new_row_index -= 1
+    elif actions[action_index] == 'right' and current_column_index < environment_columns - 1:
+      new_column_index += 1
+    elif actions[action_index] == 'down' and current_row_index < environment_rows - 1:
+      new_row_index += 1
+    elif actions[action_index] == 'left' and current_column_index > 0:
+      new_column_index -= 1
   return new_row_index, new_column_index
+
+#define a function that will get the current speed based on the location of the car
+def get_speed(current_row_index, current_column_index,action_index):
+  if actions[action_index] == 'slow' and rewards[current_row_index][current_column_index] == -5:
+    car_agent.speed = 10
+  elif actions[action_index] == 'stop' and rewards[current_row_index][current_column_index] == -10:
+    car_agent.speed = 0
+  elif actions[action_index] == 'resume' and rewards[current_row_index][current_column_index] == -5:
+    car_agent.speed = 10
+  return car_agent.speed
 
 #Define a function that will get the shortest path between any location within the warehouse that
 #the robot is allowed to travel and the item packaging location.
@@ -138,10 +144,15 @@ def get_shortest_path(start_row_index, start_column_index):
     while not is_terminal_state(current_row_index, current_column_index):
       #get the best action to take
       action_index = get_next_action(current_row_index, current_column_index, 1.)
-      speed_stats.append(car_agent.speed)
+      
       #move to the next location on the path, and add the new location to the list
       current_row_index, current_column_index = get_next_location(current_row_index, current_column_index, action_index)
+      current_speed = get_speed(current_row_index, current_column_index,action_index)
+      speed_stats.append(current_speed)
       shortest_path.append([current_row_index, current_column_index])
+      print("Current Location: ",[current_row_index, current_column_index],"Current Action: ",actions[action_index],"Current Speed: ",current_speed)
+      # # if len(shortest_path) == 5:
+      #   return []
     return shortest_path
 
 """#### Train the AI Agent using Q-Learning"""
@@ -153,7 +164,7 @@ learning_rate = 0.9 #the rate at which the AI agent should learn
 car_agent = CarStats()
 
 #run through 1000 training episodes
-for episode in range(1000):
+for episode in range(10000):
   #get the starting location for this episode
   row_index, column_index = get_starting_location()
 
@@ -162,10 +173,12 @@ for episode in range(1000):
   while not is_terminal_state(row_index, column_index):
     #choose which action to take (i.e., where to move next)
     action_index = get_next_action(row_index, column_index, epsilon)
+    # print(actions[action_index])
 
     #perform the chosen action, and transition to the next state (i.e., move to the next location)
     old_row_index, old_column_index = row_index, column_index #store the old row and column indexes
     row_index, column_index = get_next_location(row_index, column_index, action_index)
+    get_speed(row_index, column_index, action_index)
 
     #receive the reward for moving to the new state, and calculate the temporal difference
     #changed to list representation
@@ -182,8 +195,9 @@ print('Training complete!')
 """## Get Shortest Paths
 """
 
+
 #display a few shortest paths
-# print(get_shortest_path(11, 0)) #starting at row 3, column 9
+print(get_shortest_path(9, 0))
 
 """#### Finally...
 It's great that our robot can automatically take the shortest path from any 'legal' location in the warehouse to the item packaging area. **But what about the opposite scenario?**
