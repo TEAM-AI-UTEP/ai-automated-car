@@ -1,6 +1,14 @@
 #import libraries
 import numpy as np
 
+
+## Define Car Stats Class
+
+class CarStats():
+  def __init__(self, distance=0,speed=0) -> None:
+    self.distance = distance
+    self.speed = speed
+
 """## Define the Environment
 """
 
@@ -36,8 +44,8 @@ Obviously, the AI agent must learn to avoid driving into the item storage locati
 """
 
 #define actions
-#numeric action codes: 0 = up, 1 = right, 2 = down, 3 = left
-actions = ['up', 'right', 'down', 'left']
+#numeric action codes: 0 = up, 1 = right, 2 = down, 3 = left 4 = slow, 5 = stop, 6 = resume
+actions = ['up', 'right', 'down', 'left', 'slow', 'stop','resume']
 
 
 #Set Rewards
@@ -67,7 +75,7 @@ This entire process will be repeated across 1000 episodes. This will provide the
 def is_terminal_state(current_row_index, current_column_index):
   #if the reward for this location is -1, then it is not a terminal state (i.e., it is a 'white square')
   # #changed to list representation
-  if rewards[current_row_index][current_column_index] == -1.:
+  if rewards[current_row_index][current_column_index] == -1. or rewards[current_row_index][current_column_index] == -5. or rewards[current_row_index][current_column_index] == -10.:
     return False
   else:
     return True
@@ -77,6 +85,8 @@ def get_starting_location():
   #get a random row and column index
   current_row_index = np.random.randint(environment_rows)
   current_column_index = np.random.randint(environment_columns)
+  if rewards[current_row_index ][current_column_index] == -1:
+    car_agent.speed = 20
   #continue choosing random row and column indexes until a non-terminal state is identified
   #(i.e., until the chosen state is a 'white square').
   while is_terminal_state(current_row_index, current_column_index):
@@ -91,7 +101,7 @@ def get_next_action(current_row_index, current_column_index, epsilon):
   if np.random.random() < epsilon:
     return np.argmax(q_values[current_row_index, current_column_index])
   else: #choose a random action
-    return np.random.randint(4)
+    return np.random.randint(6)
 
 #define a function that will get the next location based on the chosen action
 def get_next_location(current_row_index, current_column_index, action_index):
@@ -105,11 +115,18 @@ def get_next_location(current_row_index, current_column_index, action_index):
     new_row_index += 1
   elif actions[action_index] == 'left' and current_column_index > 0:
     new_column_index -= 1
+  elif actions[action_index] == 'slow' and current_column_index > 0:
+    car_agent.speed = 10
+  elif actions[action_index] == 'stop' and current_column_index > 0:
+    car_agent.speed = 0
+  elif actions[action_index] == 'resume' and current_column_index > 0:
+    car_agent.speed = 10
   return new_row_index, new_column_index
 
 #Define a function that will get the shortest path between any location within the warehouse that
 #the robot is allowed to travel and the item packaging location.
 def get_shortest_path(start_row_index, start_column_index):
+  speed_stats = []
   #return immediately if this is an invalid starting location
   if is_terminal_state(start_row_index, start_column_index):
     return []
@@ -121,6 +138,7 @@ def get_shortest_path(start_row_index, start_column_index):
     while not is_terminal_state(current_row_index, current_column_index):
       #get the best action to take
       action_index = get_next_action(current_row_index, current_column_index, 1.)
+      speed_stats.append(car_agent.speed)
       #move to the next location on the path, and add the new location to the list
       current_row_index, current_column_index = get_next_location(current_row_index, current_column_index, action_index)
       shortest_path.append([current_row_index, current_column_index])
@@ -132,6 +150,7 @@ def get_shortest_path(start_row_index, start_column_index):
 epsilon = 0.9 #the percentage of time when we should take the best action (instead of a random action)
 discount_factor = 0.9 #discount factor for future rewards
 learning_rate = 0.9 #the rate at which the AI agent should learn
+car_agent = CarStats()
 
 #run through 1000 training episodes
 for episode in range(1000):
@@ -164,7 +183,7 @@ print('Training complete!')
 """
 
 #display a few shortest paths
-print(get_shortest_path(11, 0)) #starting at row 3, column 9
+# print(get_shortest_path(11, 0)) #starting at row 3, column 9
 
 """#### Finally...
 It's great that our robot can automatically take the shortest path from any 'legal' location in the warehouse to the item packaging area. **But what about the opposite scenario?**
