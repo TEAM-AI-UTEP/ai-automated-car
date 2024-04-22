@@ -52,7 +52,7 @@ actions = ['up', 'right', 'down', 'left', 'slow', 'stop','resume']
 
 #Our Problem Context - City with four ways and two ways
 for row in maze:
-  print(row)
+    print(" ".join(map(str, row)))
 
 rewards = maze
 
@@ -105,8 +105,10 @@ def get_next_action(current_row_index, current_column_index, epsilon):
 
 #define a function that will get the next location based on the chosen action
 def get_next_location(current_row_index, current_column_index, action_index):
+  
   new_row_index = current_row_index
   new_column_index = current_column_index
+  
   #For any location
   if rewards[current_row_index][current_column_index]:
     if actions[action_index] == 'up' and current_row_index > 0:
@@ -122,11 +124,11 @@ def get_next_location(current_row_index, current_column_index, action_index):
 #define a function that will get the current speed based on the location of the car
 def get_speed(current_row_index, current_column_index,action_index):
   if actions[action_index] == 'slow' and rewards[current_row_index][current_column_index] == -5:
-    car_agent.speed = 10
+    car_agent.speed -= 10
   elif actions[action_index] == 'stop' and rewards[current_row_index][current_column_index] == -10:
     car_agent.speed = 0
   elif actions[action_index] == 'resume' and rewards[current_row_index][current_column_index] == -5:
-    car_agent.speed = 10
+    car_agent.speed += 10
   return car_agent.speed
 
 #Define a function that will get the shortest path between any location within the warehouse that
@@ -143,11 +145,10 @@ def get_shortest_path(start_row_index, start_column_index):
     #continue moving along the path until we reach the goal (i.e., the item packaging location)
     while not is_terminal_state(current_row_index, current_column_index):
       #get the best action to take
-      action_index = get_next_action(current_row_index, current_column_index, 1.)
-      
+      action_index = get_next_action(current_row_index, current_column_index, 0.59999)
+      current_speed = get_speed(current_row_index, current_column_index,action_index)
       #move to the next location on the path, and add the new location to the list
       current_row_index, current_column_index = get_next_location(current_row_index, current_column_index, action_index)
-      current_speed = get_speed(current_row_index, current_column_index,action_index)
       speed_stats.append(current_speed)
       shortest_path.append([current_row_index, current_column_index])
       print("Current Location: ",[current_row_index, current_column_index],"Current Action: ",actions[action_index],"Current Speed: ",current_speed)
@@ -160,11 +161,11 @@ def get_shortest_path(start_row_index, start_column_index):
 #define training parameters
 epsilon = 0.9 #the percentage of time when we should take the best action (instead of a random action)
 discount_factor = 0.9 #discount factor for future rewards
-learning_rate = 0.9 #the rate at which the AI agent should learn
+learning_rate = 0.7 #the rate at which the AI agent should learn
 car_agent = CarStats()
 
 #run through 1000 training episodes
-for episode in range(10000):
+for episode in range(50000):
   #get the starting location for this episode
   row_index, column_index = get_starting_location()
 
@@ -178,7 +179,7 @@ for episode in range(10000):
     #perform the chosen action, and transition to the next state (i.e., move to the next location)
     old_row_index, old_column_index = row_index, column_index #store the old row and column indexes
     row_index, column_index = get_next_location(row_index, column_index, action_index)
-    get_speed(row_index, column_index, action_index)
+    get_speed(old_row_index, old_column_index, action_index)
 
     #receive the reward for moving to the new state, and calculate the temporal difference
     #changed to list representation
