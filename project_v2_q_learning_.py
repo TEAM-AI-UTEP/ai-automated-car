@@ -19,6 +19,7 @@ with open(file_path, 'r') as file:
     for line in file:
         row = [int(x) for x in line.strip().split()]
         maze.append(row)
+starting_location = input("Enter x and y coordinates of starting location seperated by one space (Ex: x y):").split()
 ###################
 
 
@@ -51,8 +52,9 @@ actions = ['up', 'right', 'down', 'left', 'slow', 'stop','resume']
 #Set Rewards
 
 #Our Problem Context - City with four ways and two ways
+print('\t\t\tCURRENT MAP\t\t\t')
 for row in maze:
-    print(" ".join(map(str, row)))
+    print(" ".join(["{:>5}".format(str(cell)) for cell in row]))
 
 rewards = maze
 
@@ -195,10 +197,8 @@ print('Training complete!')
 
 """## Get Shortest Paths
 """
-
-
 #display a few shortest paths
-print(get_shortest_path(9, 0))
+print(get_shortest_path(int(starting_location[0]), int(starting_location[1])))
 
 """#### Finally...
 It's great that our robot can automatically take the shortest path from any 'legal' location in the warehouse to the item packaging area. **But what about the opposite scenario?**
