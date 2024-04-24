@@ -154,7 +154,7 @@ def get_shortest_path(start_row_index, start_column_index):
       current_row_index, current_column_index = get_next_location(current_row_index, current_column_index, action_index)
       speed_stats.append(current_speed)
       shortest_path.append([current_row_index, current_column_index])
-      print("Current Location: ",[current_row_index, current_column_index],"Current Action: ",actions[action_index],"Current Speed: ",current_speed)
+      print("Current Location: ",[current_row_index, current_column_index],"Current Action: ",actions[action_index],"Current Speed: ",current_speed, "m/s")
       # if len(shortest_path) == 10:
       #   return []
     return shortest_path
