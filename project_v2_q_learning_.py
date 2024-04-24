@@ -1,5 +1,6 @@
 #import libraries
 import numpy as np
+import time
 # Bug- Overfeeding - Reduce number of episodes?
 
 ## Define Car Stats Class
@@ -31,23 +32,12 @@ environment_columns = len(maze[0])
 #Create a 3D numpy array to hold the current Q-values for each state and action pair: Q(s, a)
 
 #Automotive Car
-q_values = np.zeros((environment_rows, environment_columns, 6))
+q_values = np.zeros((environment_rows, environment_columns, 4))
 
-"""#### Actions
-The actions that are available to the AI agent are to move the robot in one of four directions:
-* Up
-* Right
-* Down
-* Left
-
-Obviously, the AI agent must learn to avoid driving into the item storage locations (e.g., shelves)!
-
-"""
 
 #define actions
 #numeric action codes: 0 = up, 1 = right, 2 = down, 3 = left 4 = slow, 5 = stop, 6 = resume
-actions = ['up', 'right', 'down', 'left', 'slow', 'stop','resume']
-
+actions = ['up', 'right', 'down', 'left']
 
 #Set Rewards
 
@@ -62,15 +52,12 @@ rewards = maze
 """## Train the Model
 Our next task is for our AI agent to learn about its environment by implementing a Q-learning model. The learning process will follow these steps:
 1. Choose a random, non-terminal state (white square) for the agent to begin this new episode.
-2. Choose an action (move *up*, *right*, *down*, or *left*) for the current state. Actions will be chosen using an *epsilon greedy algorithm*. This algorithm will usually choose the most promising action for the AI agent, but it will occasionally choose a less promising option in order to encourage the agent to explore the environment.
+2. Choose an action (move *up*, *right*, *down*, or *left*) for the current state. Actions will be chosen using an *epsilon greedy algorithm*. 
+This algorithm will usually choose the most promising action for the AI agent, but it will occasionally choose a less promising option in order to encourage the agent to explore the environment.
 3. Perform the chosen action, and transition to the next state (i.e., move to the next location).
 4. Receive the reward for moving to the new state, and calculate the temporal difference.
 5. Update the Q-value for the previous state and action pair.
 6. If the new (current) state is a terminal state, go to #1. Else, go to #2.
-
-This entire process will be repeated across 1000 episodes. This will provide the AI agent sufficient opportunity to learn the shortest paths between the item packaging area and all other locations in the warehouse where the robot is allowed to travel, while simultaneously avoiding crashing into any of the item storage locations!
-
-#### Define Helper Functions
 """
 
 #define a function that determines if the specified location is a terminal state
@@ -104,7 +91,7 @@ def get_next_action(current_row_index, current_column_index, epsilon):
   if np.random.random() < epsilon:
     return np.argmax(q_values[current_row_index, current_column_index])
   else: #choose a random action
-    return np.random.randint(6)
+    return np.random.randint(4)
 
 #define a function that will get the next location based on the chosen action
 def get_next_location(current_row_index, current_column_index, action_index):
@@ -128,16 +115,22 @@ def get_next_location(current_row_index, current_column_index, action_index):
 def get_speed(current_row_index, current_column_index,action_index,car):
   if rewards[current_row_index ][current_column_index] == -1:
     car.speed = 20
-  if actions[action_index] == 'slow' and rewards[current_row_index][current_column_index] == -5:
+
+  elif rewards[current_row_index][current_column_index] == -5:
     car.speed = car.speed/2
-  elif actions[action_index] == 'slow' and rewards[current_row_index][current_column_index] == -10:
+
+  elif rewards[current_row_index][current_column_index] == -10:
     car.speed = car.speed/2
-  elif actions[action_index] == 'stop' and rewards[current_row_index][current_column_index] == -2:
+
+  elif rewards[current_row_index][current_column_index] == -2:
     car.speed = 0
-  elif actions[action_index] == 'resume' and rewards[current_row_index][current_column_index] == -11:
+
+  elif rewards[current_row_index][current_column_index] == -11:
     car.speed += 5
-  elif actions[action_index] == 'resume' and rewards[current_row_index][current_column_index] == -15:
+
+  elif rewards[current_row_index][current_column_index] == -15:
     car.speed = car.speed*2
+
   return car.speed
 
 #Define a function that will get the shortest path between any location within the warehouse that
@@ -155,7 +148,7 @@ def get_shortest_path(start_row_index, start_column_index):
     #continue moving along the path until we reach the goal (i.e., the item packaging location)
     while not is_terminal_state(current_row_index, current_column_index):
       #get the best action to take
-      action_index = get_next_action(current_row_index, current_column_index, 0.59999)
+      action_index = get_next_action(current_row_index, current_column_index, 1.)
       current_speed = get_speed(current_row_index, current_column_index,action_index,car_agent_test)
       #move to the next location on the path, and add the new location to the list
       current_row_index, current_column_index = get_next_location(current_row_index, current_column_index, action_index)
@@ -171,11 +164,11 @@ def get_shortest_path(start_row_index, start_column_index):
 #define training parameters
 epsilon = 0.9 #the percentage of time when we should take the best action (instead of a random action)
 discount_factor = 0.9 #discount factor for future rewards
-learning_rate = 0.4 #the rate at which the AI agent should learn
+learning_rate = 0.9 #the rate at which the AI agent should learn
 car_agent = CarStats()
-
+start_time = time.time()
 #run through XXX000 training episodes
-for episode in range(10000):
+for episode in range(50000):
   #get the starting location for this episode
   row_index, column_index = get_starting_location()
 
@@ -203,6 +196,10 @@ for episode in range(10000):
     q_values[old_row_index, old_column_index, action_index] = new_q_value
 
 print('Training complete!')
+end_time = time.time()
+
+total_time = end_time - start_time
+print("Time: ", total_time*1000, "ms")
 
 """## Get Shortest Paths
 """
@@ -224,16 +221,3 @@ print(get_shortest_path(int(starting_location[0]), int(starting_location[1])))
 # print(get_shortest_path(int(starting_location[0]), int(starting_location[1])))
 # #map8 - test_file8.txt
 # print(get_shortest_path(int(starting_location[0]), int(starting_location[1])))
-
-"""#### Finally...
-It's great that our robot can automatically take the shortest path from any 'legal' location in the warehouse to the item packaging area. **But what about the opposite scenario?**
-
-
-
-Run the code cell below to see an example:
-"""
-
-#display an example of reversed shortest path
-# path = get_shortest_path(5, 2) #go to row 5, column 2
-# path.reverse()
-# print(path)
