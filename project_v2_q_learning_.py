@@ -80,6 +80,7 @@ def is_terminal_state(current_row_index, current_column_index):
   if rewards[current_row_index][current_column_index] == -1. or rewards[current_row_index][current_column_index] == -5. or rewards[current_row_index][current_column_index] == -10.:
     return False
   else:
+    # print('Destination Arrived',current_row_index, current_column_index, rewards[current_row_index][current_column_index])
     return True
 
 #define a function that will choose a random, non-terminal starting location
@@ -87,8 +88,6 @@ def get_starting_location():
   #get a random row and column index
   current_row_index = np.random.randint(environment_rows)
   current_column_index = np.random.randint(environment_columns)
-  if rewards[current_row_index ][current_column_index] == -1:
-    car_agent.speed = 20
   #continue choosing random row and column indexes until a non-terminal state is identified
   #(i.e., until the chosen state is a 'white square').
   while is_terminal_state(current_row_index, current_column_index):
@@ -125,12 +124,18 @@ def get_next_location(current_row_index, current_column_index, action_index):
 
 #define a function that will get the current speed based on the location of the car
 def get_speed(current_row_index, current_column_index,action_index):
+  if rewards[current_row_index ][current_column_index] == -1:
+    car_agent.speed = 20
   if actions[action_index] == 'slow' and rewards[current_row_index][current_column_index] == -5:
-    car_agent.speed -= 10
-  elif actions[action_index] == 'stop' and rewards[current_row_index][current_column_index] == -10:
+    car_agent.speed = car_agent.speed/2
+  elif actions[action_index] == 'slow' and rewards[current_row_index][current_column_index] == -10:
+    car_agent.speed = car_agent.speed/2
+  elif actions[action_index] == 'stop' and rewards[current_row_index][current_column_index] == 0:
     car_agent.speed = 0
-  elif actions[action_index] == 'resume' and rewards[current_row_index][current_column_index] == -5:
-    car_agent.speed += 10
+  elif actions[action_index] == 'resume' and rewards[current_row_index][current_column_index] == 10:
+    car_agent.speed += 5
+  elif actions[action_index] == 'resume' and rewards[current_row_index][current_column_index] == 5:
+    car_agent.speed = car_agent.speed*2
   return car_agent.speed
 
 #Define a function that will get the shortest path between any location within the warehouse that
@@ -147,7 +152,7 @@ def get_shortest_path(start_row_index, start_column_index):
     #continue moving along the path until we reach the goal (i.e., the item packaging location)
     while not is_terminal_state(current_row_index, current_column_index):
       #get the best action to take
-      action_index = get_next_action(current_row_index, current_column_index, 0.59999)
+      action_index = get_next_action(current_row_index, current_column_index, 1.)
       current_speed = get_speed(current_row_index, current_column_index,action_index)
       #move to the next location on the path, and add the new location to the list
       current_row_index, current_column_index = get_next_location(current_row_index, current_column_index, action_index)
@@ -163,11 +168,11 @@ def get_shortest_path(start_row_index, start_column_index):
 #define training parameters
 epsilon = 0.9 #the percentage of time when we should take the best action (instead of a random action)
 discount_factor = 0.9 #discount factor for future rewards
-learning_rate = 0.7 #the rate at which the AI agent should learn
+learning_rate = 0.9 #the rate at which the AI agent should learn
 car_agent = CarStats()
 
-#run through 1000 training episodes
-for episode in range(50000):
+#run through XXX000 training episodes
+for episode in range(1000000):
   #get the starting location for this episode
   row_index, column_index = get_starting_location()
 
@@ -198,7 +203,23 @@ print('Training complete!')
 """## Get Shortest Paths
 """
 #display a few shortest paths
+
+# #map1 - test_file.txt
+# print(get_shortest_path(int(starting_location[0]), int(starting_location[1])))
+# #map2 - test_file2.txt
+# print(get_shortest_path(int(starting_location[0]), int(starting_location[1])))
+#map3 - test_file3.txt
 print(get_shortest_path(int(starting_location[0]), int(starting_location[1])))
+#map4 - test_file4.txt
+# print(get_shortest_path(int(starting_location[0]), int(starting_location[1])))
+# #map5 - test_file5.txt
+# print(get_shortest_path(int(starting_location[0]), int(starting_location[1])))
+# #map6 - test_file6.txt
+# print(get_shortest_path(int(starting_location[0]), int(starting_location[1])))
+# #map7 - test_file7.txt
+# print(get_shortest_path(int(starting_location[0]), int(starting_location[1])))
+# #map8 - test_file8.txt
+# print(get_shortest_path(int(starting_location[0]), int(starting_location[1])))
 
 """#### Finally...
 It's great that our robot can automatically take the shortest path from any 'legal' location in the warehouse to the item packaging area. **But what about the opposite scenario?**
