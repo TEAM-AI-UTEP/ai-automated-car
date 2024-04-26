@@ -201,21 +201,6 @@ print("Time: ", total_time*1000, "ms")
 
 """## Get Shortest Paths
 """
-#display a few shortest paths
+#display a few shortest path
 
-# #map1 - test_file.txt
-# print(get_shortest_path(int(starting_location[0]), int(starting_location[1])))
-# #map2 - test_file2.txt
-# print(get_shortest_path(int(starting_location[0]), int(starting_location[1])))
-#map3 - test_file3.txt
 print(get_shortest_path(int(starting_location[0]), int(starting_location[1])))
-#map4 - test_file4.txt
-# print(get_shortest_path(int(starting_location[0]), int(starting_location[1])))
-# #map5 - test_file5.txt
-# print(get_shortest_path(int(starting_location[0]), int(starting_location[1])))
-# #map6 - test_file6.txt
-# print(get_shortest_path(int(starting_location[0]), int(starting_location[1])))
-# #map7 - test_file7.txt
-# print(get_shortest_path(int(starting_location[0]), int(starting_location[1])))
-# #map8 - test_file8.txt
-# print(get_shortest_path(int(starting_location[0]), int(starting_location[1])))
