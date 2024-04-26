@@ -1,8 +1,6 @@
 #import libraries
 import numpy as np
 import time
-# Bug- Overfeeding - Reduce number of episodes?
-
 ## Define Car Stats Class
 
 class CarStats():
@@ -168,7 +166,7 @@ learning_rate = 0.9 #the rate at which the AI agent should learn
 car_agent = CarStats()
 start_time = time.time()
 #run through XXX000 training episodes
-for episode in range(50000):
+for episode in range(1000):
   #get the starting location for this episode
   row_index, column_index = get_starting_location()
 
