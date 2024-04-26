@@ -8,5 +8,5 @@ S. Russell and P. Norvig, "Artificial Intelligence: A Modern Approach," 4th ed. 
 
 Kiekintveld, C. (2024). "MDPs and Reinforcement Learning." Presented at CS5314 Artificial Intelligence I, The University of Texas at El Paso, El Paso, April 17-2024.
 
-
+https://medium.com/@ngao7/markov-decision-process-value-iteration-2d161d50a6ff 
 
