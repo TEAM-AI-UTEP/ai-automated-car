@@ -37,6 +37,7 @@ with open(file_path, 'r') as file:
         row = [int(x) for x in line.strip().split()]
         maze.append(row)
 starting_location = input("Enter x and y coordinates of starting location seperated by one space (Ex: x y):").split()
+reward_choice = input("Enter reward function choice: \n1 for constant reward (aka reward value at index of reward grid)\n 2 for reward function to get to location without stops: ")
 ###################
 
 
@@ -148,12 +149,13 @@ def get_shortest_path(start_row_index, start_column_index):
       current_row_index, current_column_index = get_next_location(current_row_index, current_column_index, action_index)
       speed_stats.append(car_agent.speed)
       shortest_path.append([current_row_index, current_column_index])
-      print("Current Location: ",[current_row_index, current_column_index],"Current Action: ",actions[action_index],"Current Speed: ",car_agent.speed, "m/s")
+      car_agent.distance = car_agent.distance + 60
+      print("Current Location: ",[current_row_index, current_column_index],"Current Action: ",actions[action_index],"Current Speed: ",car_agent.speed, "m/s", "Current Distance: ", car_agent.distance, " units")
       # if len(shortest_path) == 10:
       #   return []
     return shortest_path
 
-
+# function that returns the reward value based on environment
 def reward_function(location_reward_index):    
     # Calculate speed
     # Calculate reward
@@ -172,7 +174,8 @@ def reward_function(location_reward_index):
       lose = 11
     elif location_reward_index == -15:
       lose = 15
-
+    
+    
     return reward - lose
 """#### Train the AI Agent using Q-Learning"""
 
@@ -200,7 +203,13 @@ for episode in range(10000):
     
     #receive the reward for moving to the new state, and calculate the temporal difference
     #changed to list representation
-    reward = reward_function(rewards[row_index][column_index])
+
+    if int(reward_choice) == 1:
+       reward = rewards[row_index][column_index]
+    if int(reward_choice) == 2:
+      reward = reward_function(rewards[row_index][column_index])
+
+
     old_q_value = q_values[old_row_index, old_column_index, action_index]
     temporal_difference = reward + (discount_factor * np.max(q_values[row_index, column_index])) - old_q_value
 
