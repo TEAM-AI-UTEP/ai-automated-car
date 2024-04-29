@@ -36,8 +36,8 @@ with open(file_path, 'r') as file:
     for line in file:
         row = [int(x) for x in line.strip().split()]
         maze.append(row)
-starting_location = input("Enter x and y coordinates of starting location seperated by one space (Ex: x y):").split()
-reward_choice = input("Enter reward function choice: \n1 for constant reward (aka reward value at index of reward grid)\n 2 for reward function to get to location without stops: ")
+starting_location = input("Enter x and y coordinates of starting location separated by one space (Ex: x y):").split()
+reward_choice = input("Enter reward function choice:\t1 - for constant reward (aka reward value at index of reward grid)\n\t\t\t\t2 - for reward function to get to location without stops\n\n Enter Input:")
 ###################
 
 
@@ -174,8 +174,6 @@ def reward_function(location_reward_index):
       lose = 11
     elif location_reward_index == -15:
       lose = 15
-    
-    
     return reward - lose
 """#### Train the AI Agent using Q-Learning"""
 

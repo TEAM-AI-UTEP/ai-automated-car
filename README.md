@@ -1,3 +1,8 @@
+Instructions:
+
+Please run project_v2_q_learning to see results
+
+
 Citations:
 
 https://www.youtube.com/watch?v=iKdlKYG78j4&t=340s&ab_channel=Dr.DanielSoper 
