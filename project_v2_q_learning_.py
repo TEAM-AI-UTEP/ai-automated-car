@@ -1,14 +1,30 @@
 #import libraries
 import numpy as np
 import time
-# Bug- Overfeeding - Reduce number of episodes?
-
 ## Define Car Stats Class
 
 class CarStats():
   def __init__(self, distance=0,speed=0) -> None:
     self.distance = distance
     self.speed = speed
+  
+  def reset_speed(self):
+    self.speed = 0
+  
+  def get_speed(self, index):
+    if index == -1:
+      car_agent.speed = 20
+    elif index == -5:
+      car_agent.speed = car_agent.speed/2
+    elif index == -10:
+      car_agent.speed = car_agent.speed/2
+    elif index == -2:
+      car_agent.speed = 0
+    elif index == -11:
+      car_agent.speed +=5
+    elif index == -15:
+      car_agent.speed = car_agent.speed*2
+
 
 """## Define the Environment
 """
@@ -111,33 +127,11 @@ def get_next_location(current_row_index, current_column_index, action_index):
       new_column_index -= 1
   return new_row_index, new_column_index
 
-#define a function that will get the current speed based on the location of the car
-def get_speed(current_row_index, current_column_index,action_index,car):
-  if rewards[current_row_index ][current_column_index] == -1:
-    car.speed = 20
-
-  elif rewards[current_row_index][current_column_index] == -5:
-    car.speed = car.speed/2
-
-  elif rewards[current_row_index][current_column_index] == -10:
-    car.speed = car.speed/2
-
-  elif rewards[current_row_index][current_column_index] == -2:
-    car.speed = 0
-
-  elif rewards[current_row_index][current_column_index] == -11:
-    car.speed += 5
-
-  elif rewards[current_row_index][current_column_index] == -15:
-    car.speed = car.speed*2
-
-  return car.speed
-
 #Define a function that will get the shortest path between any location within the warehouse that
 #the robot is allowed to travel and the item packaging location.
 def get_shortest_path(start_row_index, start_column_index):
   speed_stats = []
-  car_agent_test = CarStats()
+  car_agent.reset_speed()
   #return immediately if this is an invalid starting location
   if is_terminal_state(start_row_index, start_column_index):
     return []
@@ -149,16 +143,37 @@ def get_shortest_path(start_row_index, start_column_index):
     while not is_terminal_state(current_row_index, current_column_index):
       #get the best action to take
       action_index = get_next_action(current_row_index, current_column_index, 1.)
-      current_speed = get_speed(current_row_index, current_column_index,action_index,car_agent_test)
+      car_agent.get_speed(rewards[current_row_index][current_column_index])
       #move to the next location on the path, and add the new location to the list
       current_row_index, current_column_index = get_next_location(current_row_index, current_column_index, action_index)
-      speed_stats.append(current_speed)
+      speed_stats.append(car_agent.speed)
       shortest_path.append([current_row_index, current_column_index])
-      print("Current Location: ",[current_row_index, current_column_index],"Current Action: ",actions[action_index],"Current Speed: ",current_speed, "m/s")
+      print("Current Location: ",[current_row_index, current_column_index],"Current Action: ",actions[action_index],"Current Speed: ",car_agent.speed, "m/s")
       # if len(shortest_path) == 10:
       #   return []
     return shortest_path
 
+
+def reward_function(location_reward_index):    
+    # Calculate speed
+    # Calculate reward
+    reward = location_reward_index
+        
+    # Penalize for each step taken speed slowing or resuming
+    lose = 0
+    # Adjust reward based on speed
+    if location_reward_index == -5:
+      lose = 5
+    elif location_reward_index == -10:
+      lose = 10
+    elif location_reward_index == -2:
+      lose = 2
+    elif location_reward_index == -11:
+      lose = 11
+    elif location_reward_index == -15:
+      lose = 15
+
+    return reward - lose
 """#### Train the AI Agent using Q-Learning"""
 
 #define training parameters
@@ -168,7 +183,7 @@ learning_rate = 0.9 #the rate at which the AI agent should learn
 car_agent = CarStats()
 start_time = time.time()
 #run through XXX000 training episodes
-for episode in range(50000):
+for episode in range(10000):
   #get the starting location for this episode
   row_index, column_index = get_starting_location()
 
@@ -182,12 +197,10 @@ for episode in range(50000):
     #perform the chosen action, and transition to the next state (i.e., move to the next location)
     old_row_index, old_column_index = row_index, column_index #store the old row and column indexes
     row_index, column_index = get_next_location(row_index, column_index, action_index)
-    cur = get_speed(old_row_index, old_column_index, action_index,car_agent)
-    # print('SPEED: ',cur)
     
     #receive the reward for moving to the new state, and calculate the temporal difference
     #changed to list representation
-    reward = rewards[row_index][column_index]
+    reward = reward_function(rewards[row_index][column_index])
     old_q_value = q_values[old_row_index, old_column_index, action_index]
     temporal_difference = reward + (discount_factor * np.max(q_values[row_index, column_index])) - old_q_value
 
@@ -203,21 +216,6 @@ print("Time: ", total_time*1000, "ms")
 
 """## Get Shortest Paths
 """
-#display a few shortest paths
+#display a few shortest path
 
-# #map1 - test_file.txt
-# print(get_shortest_path(int(starting_location[0]), int(starting_location[1])))
-# #map2 - test_file2.txt
-# print(get_shortest_path(int(starting_location[0]), int(starting_location[1])))
-#map3 - test_file3.txt
 print(get_shortest_path(int(starting_location[0]), int(starting_location[1])))
-#map4 - test_file4.txt
-# print(get_shortest_path(int(starting_location[0]), int(starting_location[1])))
-# #map5 - test_file5.txt
-# print(get_shortest_path(int(starting_location[0]), int(starting_location[1])))
-# #map6 - test_file6.txt
-# print(get_shortest_path(int(starting_location[0]), int(starting_location[1])))
-# #map7 - test_file7.txt
-# print(get_shortest_path(int(starting_location[0]), int(starting_location[1])))
-# #map8 - test_file8.txt
-# print(get_shortest_path(int(starting_location[0]), int(starting_location[1])))
