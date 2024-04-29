@@ -142,7 +142,7 @@ def get_shortest_path(start_row_index, start_column_index):
     #continue moving along the path until we reach the goal (i.e., the item packaging location)
     while not is_terminal_state(current_row_index, current_column_index):
       #get the best action to take
-      action_index = get_next_action(current_row_index, current_column_index, .90)
+      action_index = get_next_action(current_row_index, current_column_index, 1.)
       car_agent.get_speed(rewards[current_row_index][current_column_index])
       #move to the next location on the path, and add the new location to the list
       current_row_index, current_column_index = get_next_location(current_row_index, current_column_index, action_index)
@@ -162,18 +162,16 @@ def reward_function(location_reward_index):
     # Penalize for each step taken speed slowing or resuming
     lose = 0
     # Adjust reward based on speed
-    if location_reward_index == -1:
-      car_agent.speed = 20
-    elif location_reward_index == -5:
-      lose = 1
+    if location_reward_index == -5:
+      lose = 5
     elif location_reward_index == -10:
-      lose = 2
+      lose = 10
     elif location_reward_index == -2:
-      lose = 3
-    elif location_reward_index == -11:
       lose = 2
+    elif location_reward_index == -11:
+      lose = 11
     elif location_reward_index == -15:
-      lose = 1
+      lose = 15
 
     return reward - lose
 """#### Train the AI Agent using Q-Learning"""
@@ -185,7 +183,7 @@ learning_rate = 0.9 #the rate at which the AI agent should learn
 car_agent = CarStats()
 start_time = time.time()
 #run through XXX000 training episodes
-for episode in range(50000):
+for episode in range(10000):
   #get the starting location for this episode
   row_index, column_index = get_starting_location()
 
@@ -199,8 +197,6 @@ for episode in range(50000):
     #perform the chosen action, and transition to the next state (i.e., move to the next location)
     old_row_index, old_column_index = row_index, column_index #store the old row and column indexes
     row_index, column_index = get_next_location(row_index, column_index, action_index)
-    # cur = get_speed(old_row_index, old_column_index, action_index,car_agent)
-    # print('SPEED: ',cur)
     
     #receive the reward for moving to the new state, and calculate the temporal difference
     #changed to list representation
